@@ -1,0 +1,99 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+
+enum Role { USER ADMIN }
+enum Plan { FREE PRO PREMIUM }
+enum Goal { MUSCLE_GAIN BULKING FAT_LOSS RECOMP STRENGTH }
+enum Level { BEGINNER INTERMEDIATE ADVANCED }
+
+model User {
+  id String @id @default(cuid())
+  clerkId String @unique
+  email String? @unique
+  name String?
+  role Role @default(USER)
+  plan Plan @default(FREE)
+  stripeCustomerId String?
+  onboarding Profile?
+  workouts WorkoutPlan[]
+  nutrition NutritionPlan[]
+  chats ChatMessage[]
+  progress ProgressEntry[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Profile {
+  id String @id @default(cuid())
+  userId String @unique
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  age Int
+  gender String
+  height Float
+  weight Float
+  bodyFat Float?
+  goal Goal
+  level Level
+  workoutDays Int
+  equipment String[]
+  dietPreference String?
+  injuries String?
+  medicalLimitations String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WorkoutPlan {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title String
+  split String
+  content Json
+  createdAt DateTime @default(now())
+}
+
+model NutritionPlan {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title String
+  calories Int
+  protein Int
+  carbs Int
+  fats Int
+  content Json
+  createdAt DateTime @default(now())
+}
+
+model ChatMessage {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role String
+  content String
+  createdAt DateTime @default(now())
+}
+
+model ProgressEntry {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weight Float?
+  calories Int?
+  chest Float?
+  waist Float?
+  arms Float?
+  legs Float?
+  photoUrl String?
+  note String?
+  createdAt DateTime @default(now())
+}
+
+model SubscriptionEvent {
+  id String @id @default(cuid())
+  stripeEventId String @unique
+  type String
+  payload Json
+  createdAt DateTime @default(now())
+}
